@@ -123,6 +123,11 @@ define([
 
             // create the player
             this.$('audio, video').mediaelementplayer(modelOptions);
+
+            if ($('html').is(".ie8")) {
+                this.setReadyStatus();
+            }
+
         },
 
         onDeviceChanged: function() {
