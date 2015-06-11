@@ -11,9 +11,9 @@ define([
 ],function(Adapt, NotifyView, mep) {
 
     var OverriddenShowNotify = NotifyView.prototype.showNotify;
+    var OverriddenCloseNotify = NotifyView.prototype.closeNotify;
 
     NotifyView.prototype.showNotify = function() {
-        //extra video / media stuff
 
         if (this.$("video, audio").length > 0) {
             return this.createPlayer();
@@ -23,8 +23,15 @@ define([
             return this.createImage();
         }
 
-
         OverriddenShowNotify.apply(this, arguments);
+    };
+
+    NotifyView.prototype.closeNotify = function() {
+        if (this.$("video, audio").length > 0) {
+            return this.removePlayer();
+        }
+
+        OverriddenCloseNotify.apply(this, arguments);
     };
 
 
@@ -40,9 +47,21 @@ define([
             this.extractAndReplaceMedia();
 
 
+            this.$(".medianotify-popup-content-inner-media").attr({
+                "aria-label": Adapt.course.get("_globals")._components._media.ariaRegion,
+                "role": "region"
+            });
+
+            this.$el.a11y_aria_label(true);
+
             this.setupMediaPlayerEvents();
             this.setupPlayer();
-            console.log("Video active section");
+
+        },
+
+        removePlayer: function() {
+            this.onRemove();
+            OverriddenCloseNotify.apply(this, arguments);
         },
 
 
@@ -72,6 +91,7 @@ define([
         setupMediaPlayerEvents: function() {
             this.listenTo(Adapt, 'device:resize', this.onScreenSizeChanged);
             this.listenTo(Adapt, 'device:changed', this.onDeviceChanged);
+            this.listenTo(Adapt, 'accessibility:toggle', this.onAccessibilityToggle);
         },
 
         setupPlayer: function() {
@@ -171,6 +191,15 @@ define([
                 var isPaused = player.media.paused;
                 if(!isPaused) player.pause();
             }, this));
+        },
+
+        onRemove: function() {
+            if ($("html").is(".ie8")) {
+                var obj = this.$("object")[0];
+                obj.style.display = "none"
+            }
+            $(this.mediaElement.pluginElement).remove();
+            delete this.mediaElement;
         },
 
     };
