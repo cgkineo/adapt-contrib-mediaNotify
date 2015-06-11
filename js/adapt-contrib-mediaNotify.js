@@ -75,7 +75,10 @@ define([
 
         removePlayer: function() {
             this.onRemove();
-            OverriddenCloseNotify.apply(this, arguments);
+
+            _.defer(_.bind(function() {
+                OverriddenCloseNotify.apply(this, arguments);
+            }, this));
         },
 
 
@@ -213,9 +216,11 @@ define([
         },
 
         onRemove: function() {
+            this.stopListening();
             if ($("html").is(".ie8")) {
                 var obj = this.$("object")[0];
                 obj.style.display = "none"
+                this.mediaElement.remove();
             }
             $(this.mediaElement.pluginElement).remove();
             delete this.mediaElement;
