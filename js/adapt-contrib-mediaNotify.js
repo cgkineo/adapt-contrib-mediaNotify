@@ -39,6 +39,20 @@ define([
 
         createImage: function() {
             this.extractAndReplaceMedia();
+
+            var $img = this.$('img');
+
+            $img.each(function(index, item) {
+                var $item = $(item);
+                var alt = $item.attr("alt");
+                if (alt) {
+                    $item.attr({
+                        "tabindex": "0",
+                        "aria-label": alt
+                    });
+                }
+            });
+
             this.setReadyStatus();
         },
 
